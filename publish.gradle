@@ -1,0 +1,95 @@
+apply plugin: 'maven-publish'
+apply plugin: 'com.jfrog.bintray'
+
+ext {
+    bintrayRepo = 'CodeQuality-Android'
+    bintrayName = 'CodeQuality-Android'
+
+    publishedGroupId = 'ru.mobileup'
+    libraryName = 'CodeQuality-Android'
+    artifact = 'code-quality-android'
+
+    libraryDescription = 'Gradle plugin for integration with Gitlab Code Quality'
+    libraryVersion = '1.0.0'
+
+    siteUrl = 'https://github.com/MobileUpLLC/CodeQuality-Android/'
+    gitUrl = 'https://github.com/MobileUpLLC/CodeQuality-Android.git'
+
+    developerId = 'MobileUp'
+    developerName = 'MobileUp'
+    developerEmail = 'dev@mobileup.ru'
+
+    licenseName = 'The MIT License'
+    licenseUrl = 'https://github.com/MobileUpLLC/CodeQuality-Android/blob/master/LICENSE'
+    allLicenses = ['MIT']
+}
+
+java {
+    withJavadocJar()
+    withSourcesJar()
+}
+
+// Create Maven Artifact
+publishing {
+    publications {
+        codeQualityAndroid(MavenPublication) {
+            from components.java
+            groupId publishedGroupId
+            artifactId artifact
+            version libraryVersion
+            pom {
+                name = libraryName
+                description = libraryDescription
+                url = siteUrl
+                licenses {
+                    license {
+                        name = licenseName
+                        url = licenseUrl
+                    }
+                }
+                developers {
+                    developer {
+                        id = developerId
+                        name = developerName
+                        email = developerEmail
+                    }
+                }
+                scm {
+                    connection = gitUrl
+                    developerConnection = gitUrl
+                    url = siteUrl
+                }
+            }
+        }
+    }
+}
+
+// Publish to Bintray. Use "./gradlew bintrayUpload" to run it.
+Properties properties = new Properties()
+properties.load(file('local.properties').newDataInputStream())
+
+bintray {
+    user = properties.getProperty('bintray.user')
+    key = properties.getProperty('bintray.apikey')
+    publications = ['codeQualityAndroid']
+
+    pkg {
+        repo = bintrayRepo
+        name = bintrayName
+        desc = libraryDescription
+        websiteUrl = siteUrl
+        vcsUrl = gitUrl
+        licenses = allLicenses
+        userOrg = properties.getProperty('bintray.userOrg')
+        publish = true
+        publicDownloadNumbers = true
+        version {
+            name = libraryVersion
+            desc = libraryDescription
+            gpg {
+                sign = true
+                passphrase = properties.getProperty('bintray.gpg.password')
+            }
+        }
+    }
+}
