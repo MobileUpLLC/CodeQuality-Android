@@ -10,13 +10,11 @@ It converts Detekt and Lint reports to compatible with [Gitlab Code Quality](htt
 1) Add dependency
 ```
 buildscript {
-
     repositories {
         ...
-        maven {
-            url  'https://dl.bintray.com/1117847002272/CodeQuality-Android'
-        }
+        jcenter()
     }
+
     dependencies {
         ...
         classpath 'ru.mobileup:code-quality-android:1.0.0'
