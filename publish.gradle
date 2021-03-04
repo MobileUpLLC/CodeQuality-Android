@@ -1,95 +1,151 @@
 apply plugin: 'maven-publish'
-apply plugin: 'com.jfrog.bintray'
+apply plugin: 'signing'
+
+/**
+ * Publish:
+ * Fill local.properties according to template-for-local.properties
+ * ./gradlew build
+ * ./gradlew publishReleasePublicationToSonatypeRepository
+ * ./gradlew closeAndReleaseRepository
+ *
+ * More info: https://getstream.io/blog/publishing-libraries-to-mavencentral-2021/
+ */
 
 ext {
-    bintrayRepo = 'CodeQuality-Android'
-    bintrayName = 'CodeQuality-Android'
+    PUBLISH_GROUP_ID = 'ru.mobileup'
+    PUBLISH_ARTIFACT_ID = 'code-quality-android'
+    PUBLISH_VERSION = '1.0.0'
+    DESCRIPTION = 'Gradle plugin for integration with Gitlab Code Quality'
 
-    publishedGroupId = 'ru.mobileup'
-    libraryName = 'CodeQuality-Android'
-    artifact = 'code-quality-android'
+    GITHUB_USER = 'MobileUpLLC'
+    GITHUB_PROJECT = 'CodeQuality-Android'
+    LICENSE_NAME = 'MIT License'
+    LICENSE_URL = "https://github.com/${GITHUB_USER}/${GITHUB_PROJECT}/blob/master/LICENSE"
 
-    libraryDescription = 'Gradle plugin for integration with Gitlab Code Quality'
-    libraryVersion = '1.0.0'
-
-    siteUrl = 'https://github.com/MobileUpLLC/CodeQuality-Android/'
-    gitUrl = 'https://github.com/MobileUpLLC/CodeQuality-Android.git'
-
-    developerId = 'MobileUp'
-    developerName = 'MobileUp'
-    developerEmail = 'dev@mobileup.ru'
-
-    licenseName = 'The MIT License'
-    licenseUrl = 'https://github.com/MobileUpLLC/CodeQuality-Android/blob/master/LICENSE'
-    allLicenses = ['MIT']
+    DEVELOPER_ID = 'MobileUp'
+    DEVELOPER_NAME = 'MobileUp'
+    DEVELOPER_EMAIL = 'dev@mobileup.ru'
 }
 
-java {
-    withJavadocJar()
-    withSourcesJar()
+task androidSourcesJar(type: Jar) {
+    archiveClassifier.set('sources')
+    if (project.plugins.findPlugin("com.android.library")) {
+        from android.sourceSets.main.java.srcDirs
+        from android.sourceSets.main.kotlin.srcDirs
+    } else {
+        from sourceSets.main.java.srcDirs
+        from sourceSets.main.kotlin.srcDirs
+    }
 }
 
-// Create Maven Artifact
+task javadocJar(type: Jar, dependsOn: dokkaJavadoc) {
+    archiveClassifier.set('javadoc')
+    from dokkaJavadoc.outputDirectory
+}
+
+artifacts {
+    archives androidSourcesJar
+    archives javadocJar
+}
+
+group = PUBLISH_GROUP_ID
+version = PUBLISH_VERSION
+
+ext["signing.keyId"] = ''
+ext["signing.password"] = ''
+ext["signing.secretKeyRingFile"] = ''
+ext["ossrhUsername"] = ''
+ext["ossrhPassword"] = ''
+ext["sonatypeStagingProfileId"] = ''
+
+File secretPropsFile = project.rootProject.file('local.properties')
+if (secretPropsFile.exists()) {
+    Properties p = new Properties()
+    p.load(new FileInputStream(secretPropsFile))
+    p.each { name, value ->
+        ext[name] = value
+    }
+} else {
+    ext["signing.keyId"] = System.getenv('SIGNING_KEY_ID')
+    ext["signing.password"] = System.getenv('SIGNING_PASSWORD')
+    ext["signing.secretKeyRingFile"] = System.getenv('SIGNING_SECRET_KEY_RING_FILE')
+    ext["ossrhUsername"] = System.getenv('OSSRH_USERNAME')
+    ext["ossrhPassword"] = System.getenv('OSSRH_PASSWORD')
+    ext["sonatypeStagingProfileId"] = System.getenv('SONATYPE_STAGING_PROFILE_ID')
+}
+
 publishing {
     publications {
-        codeQualityAndroid(MavenPublication) {
-            from components.java
-            groupId publishedGroupId
-            artifactId artifact
-            version libraryVersion
+        release(MavenPublication) {
+            groupId PUBLISH_GROUP_ID
+            artifactId PUBLISH_ARTIFACT_ID
+            version PUBLISH_VERSION
+            if (project.plugins.findPlugin("com.android.library")) {
+                artifact("$buildDir/outputs/aar/${project.getName()}-release.aar")
+            } else {
+                artifact("$buildDir/libs/${project.getName()}-${version}.jar")
+            }
+
+            artifact androidSourcesJar
+            artifact javadocJar
+
             pom {
-                name = libraryName
-                description = libraryDescription
-                url = siteUrl
+                name = PUBLISH_ARTIFACT_ID
+                description = DESCRIPTION
+                url = "https://github.com/${GITHUB_USER}/${GITHUB_PROJECT}"
                 licenses {
                     license {
-                        name = licenseName
-                        url = licenseUrl
+                        name = LICENSE_NAME
+                        url = LICENSE_URL
                     }
                 }
                 developers {
                     developer {
-                        id = developerId
-                        name = developerName
-                        email = developerEmail
+                        id = DEVELOPER_ID
+                        name = DEVELOPER_NAME
+                        email = DEVELOPER_EMAIL
                     }
                 }
                 scm {
-                    connection = gitUrl
-                    developerConnection = gitUrl
-                    url = siteUrl
+                    connection = "scm:git:github.com/${GITHUB_USER}/${GITHUB_PROJECT}.git"
+                    developerConnection = "scm:git:ssh://github.com/${GITHUB_USER}/${GITHUB_PROJECT}.git"
+                    url = "https://github.com/${GITHUB_USER}/${GITHUB_PROJECT}/tree/main"
                 }
+                withXml {
+                    def dependenciesNode = asNode().appendNode('dependencies')
+
+                    project.configurations.implementation.allDependencies.each {
+                        def dependencyNode = dependenciesNode.appendNode('dependency')
+                        dependencyNode.appendNode('groupId', it.group)
+                        dependencyNode.appendNode('artifactId', it.name)
+                        dependencyNode.appendNode('version', it.version)
+                    }
+                }
+            }
+        }
+    }
+    repositories {
+        maven {
+            name = "sonatype"
+            def releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+            def snapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots/"
+            url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+
+            credentials {
+                username ossrhUsername
+                password ossrhPassword
             }
         }
     }
 }
 
-// Publish to Bintray. Use "./gradlew bintrayUpload" to run it.
-Properties properties = new Properties()
-properties.load(file('local.properties').newDataInputStream())
+nexusStaging {
+    packageGroup = PUBLISH_GROUP_ID
+    stagingProfileId = sonatypeStagingProfileId
+    username = ossrhUsername
+    password = ossrhPassword
+}
 
-bintray {
-    user = properties.getProperty('bintray.user')
-    key = properties.getProperty('bintray.apikey')
-    publications = ['codeQualityAndroid']
-
-    pkg {
-        repo = bintrayRepo
-        name = bintrayName
-        desc = libraryDescription
-        websiteUrl = siteUrl
-        vcsUrl = gitUrl
-        licenses = allLicenses
-        userOrg = properties.getProperty('bintray.userOrg')
-        publish = true
-        publicDownloadNumbers = true
-        version {
-            name = libraryVersion
-            desc = libraryDescription
-            gpg {
-                sign = true
-                passphrase = properties.getProperty('bintray.gpg.password')
-            }
-        }
-    }
+signing {
+    sign publishing.publications
 }
