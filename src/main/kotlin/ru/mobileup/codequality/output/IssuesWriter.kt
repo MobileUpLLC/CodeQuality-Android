@@ -5,7 +5,6 @@ import ru.mobileup.codequality.issueconverter.Issue
 import java.io.File
 import java.io.OutputStreamWriter
 import java.security.MessageDigest
-import javax.xml.bind.DatatypeConverter
 
 private class IssueJson(
     val description: String,
@@ -52,8 +51,12 @@ class IssuesWriter {
     }
 
     private fun md5Hash(input: String): String {
-        val bytes = MessageDigest.getInstance("MD5")
+        return MessageDigest.getInstance("MD5")
             .digest(input.toByteArray())
-        return DatatypeConverter.printHexBinary(bytes)
+            .toHexString()
+    }
+
+    private fun ByteArray.toHexString() = joinToString("") {
+        (0xFF and it.toInt()).toString(16).padStart(2, '0')
     }
 }
