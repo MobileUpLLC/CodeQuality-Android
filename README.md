@@ -1,5 +1,5 @@
 # Code Quality for Android
-[![Maven Central](https://img.shields.io/maven-central/v/ru.mobileup/rxpagingloading)](https://repo1.maven.org/maven2/ru/mobileup/rxpagingloading)[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Maven Central](https://img.shields.io/maven-central/v/ru.mobileup/code-quality-android)](https://repo1.maven.org/maven2/ru/mobileup/code-quality-android) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 Gradle Plugin for integration of code quality tools with Gitlab CI.
 It converts Detekt and Lint reports to compatible with [Gitlab Code Quality](https://docs.gitlab.com/ee/user/project/merge_requests/code_quality.html) format.
@@ -16,7 +16,7 @@ buildscript {
 
     dependencies {
         ...
-        classpath 'ru.mobileup:code-quality-android:1.0.0'
+        classpath 'ru.mobileup:code-quality-android:1.0.1'
     }
 }
 ```
