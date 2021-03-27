@@ -29,8 +29,8 @@ class LintParser {
     }
 
     private fun String?.toSeverity(): Severity = when (this) {
-        "Error" -> Severity.ERROR
-        "Warning" -> Severity.WARNING
-        else -> Severity.INFORMATION
+        "Error" -> Severity.BLOCKER
+        "Warning" -> Severity.CRITICAL
+        else -> Severity.INFO
     }
 }

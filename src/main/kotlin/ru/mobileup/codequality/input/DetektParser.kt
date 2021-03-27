@@ -31,8 +31,8 @@ class DetektParser {
     }
 
     private fun String?.toSeverity(): Severity = when (this) {
-        "error" -> Severity.ERROR
-        "warning" -> Severity.WARNING
-        else -> Severity.INFORMATION
+        "error" -> Severity.BLOCKER
+        "warning" -> Severity.CRITICAL
+        else -> Severity.INFO
     }
 }

@@ -7,6 +7,10 @@ data class Issue(
     val line: Int
 )
 
-enum class Severity {
-    INFORMATION, WARNING, ERROR
+enum class Severity(val severityName: String) {
+    INFO("info"),
+    MINOR("minor"),
+    MAJOR("major"),
+    CRITICAL("critical"),
+    BLOCKER("blocker")
 }
