@@ -9,6 +9,7 @@ import java.security.MessageDigest
 private class IssueJson(
     val description: String,
     val fingerprint: String,
+    val severity: String,
     val location: LocationJson
 )
 
@@ -28,6 +29,7 @@ class IssuesWriter {
             IssueJson(
                 description = issue.description,
                 fingerprint = calculateFingerprint(issue),
+                severity = issue.severity.severityName,
                 location = LocationJson(
                     path = getRelativePath(issue.filePath, outputFile.parentFile.absolutePath),
                     lines = LinesJson(begin = issue.line)
