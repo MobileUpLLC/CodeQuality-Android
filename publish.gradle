@@ -14,7 +14,7 @@ apply plugin: 'signing'
 ext {
     PUBLISH_GROUP_ID = 'ru.mobileup'
     PUBLISH_ARTIFACT_ID = 'code-quality-android'
-    PUBLISH_VERSION = '1.0.1'
+    PUBLISH_VERSION = '1.1.0'
     DESCRIPTION = 'Gradle plugin for integration with Gitlab Code Quality'
 
     GITHUB_USER = 'MobileUpLLC'

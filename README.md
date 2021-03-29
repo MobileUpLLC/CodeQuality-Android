@@ -16,7 +16,7 @@ buildscript {
 
     dependencies {
         ...
-        classpath 'ru.mobileup:code-quality-android:1.0.1'
+        classpath 'ru.mobileup:code-quality-android:1.1.0'
     }
 }
 ```
