@@ -9,8 +9,6 @@ data class Issue(
 
 enum class Severity(val severityName: String) {
     INFO("info"),
-    MINOR("minor"),
-    MAJOR("major"),
     CRITICAL("critical"),
     BLOCKER("blocker")
 }

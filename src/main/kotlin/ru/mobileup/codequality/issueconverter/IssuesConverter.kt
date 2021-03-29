@@ -31,7 +31,7 @@ class IssuesConverter(
         val filteredIssues = if (collectInformationIssues) {
             issues
         } else {
-            issues.filter { it.severity != Severity.INFORMATION }
+            issues.filter { it.severity != Severity.INFO }
         }
 
         issuesWriter.write(filteredIssues, outputFile)
