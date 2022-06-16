@@ -1,17 +1,15 @@
 buildscript {
-    ext.kotlinVersion = '1.4.31'
-    ext.nexusStagingVersion = '0.22.0'
-    ext.dokkaVersion = '1.4.20'
+    ext.kotlinVersion = '1.6.21'
 
     repositories {
         google()
-        jcenter()
+        mavenCentral()
     }
 
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
-        classpath "io.codearte.gradle.nexus:gradle-nexus-staging-plugin:$nexusStagingVersion"
-        classpath("org.jetbrains.dokka:dokka-gradle-plugin:$dokkaVersion")
+        classpath "io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.30.0"
+        classpath("org.jetbrains.dokka:dokka-gradle-plugin:1.6.21")
     }
 }
 
@@ -22,7 +20,7 @@ apply plugin: 'org.jetbrains.dokka'
 
 repositories {
     google()
-    jcenter()
+    mavenCentral()
 }
 
 dependencies {
@@ -30,9 +28,12 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.8.6'
 }
 
+group = 'ru.mobileup'
+version = '1.2.0'
+
 gradlePlugin {
     plugins {
-        simplePlugin {
+        codeQuality {
             id = 'ru.mobileup.code-quality-android'
             implementationClass = 'ru.mobileup.codequality.CodeQualityPlugin'
         }
